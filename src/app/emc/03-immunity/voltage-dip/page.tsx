@@ -1,5 +1,76 @@
 import TestTemplate from '@/components/TestTemplate'
 import Callout from '@/components/Callout'
+import { WaveformDiagram } from '@/components/WaveformDiagram'
+
+function VoltageDipWaveform() {
+  const w = 540
+  const h = 200
+  const ox = 40
+  const oy = 155
+  const xScale = 1.5  // px per ms
+  const amp = 80      // 100% = 80px
+
+  // Draw AC voltage with dip
+  // 0-50ms: normal, 50-70ms: 40% dip, 70-100ms: normal, 110-360ms: 0% (interruption), 360-400ms: normal
+  const segments = [
+    { start: 0, end: 50, level: 1.0 },
+    { start: 50, end: 70, level: 0.4 },
+    { start: 70, end: 110, level: 1.0 },
+    { start: 110, end: 160, level: 0.0 },
+    { start: 160, end: 220, level: 1.0 },
+  ]
+
+  const pts: string[] = []
+  for (const seg of segments) {
+    for (let t = seg.start; t <= seg.end; t += 0.5) {
+      const v = seg.level * Math.sin(2 * Math.PI * t / 20) * amp
+      pts.push(`${ox + t * xScale},${oy - v}`)
+    }
+  }
+
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full max-w-xl">
+      <text x={w/2} y={14} fontSize="12" fontWeight="bold" fill="#1f2937" textAnchor="middle">電圧ディップ・瞬停波形（IEC 61000-4-11）</text>
+
+      {/* Axes */}
+      <line x1={ox} y1={oy} x2={ox + 220*xScale + 20} y2={oy} stroke="#374151" strokeWidth="1.5" markerEnd="url(#arrD)"/>
+      <line x1={ox} y1={oy + amp + 15} x2={ox} y2={oy - amp - 20} stroke="#374151" strokeWidth="1.5" markerEnd="url(#arrD)"/>
+      <defs>
+        <marker id="arrD" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3 z" fill="#374151"/>
+        </marker>
+      </defs>
+      <text x={ox + 220*xScale + 25} y={oy + 4} fontSize="10" fill="#6b7280">ms</text>
+      <text x={ox - 5} y={oy - amp - 18} fontSize="10" fill="#6b7280" textAnchor="end">V</text>
+
+      {/* 100% reference lines */}
+      <line x1={ox} y1={oy - amp} x2={ox + 220*xScale} y2={oy - amp} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4,3"/>
+      <line x1={ox} y1={oy + amp} x2={ox + 220*xScale} y2={oy + amp} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4,3"/>
+      <text x={ox - 5} y={oy - amp + 4} fontSize="9" fill="#9ca3af" textAnchor="end">100%</text>
+
+      {/* Waveform */}
+      <polyline points={pts.join(' ')} fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinejoin="round"/>
+
+      {/* Annotations */}
+      {/* Dip region */}
+      <rect x={ox+50*xScale} y={oy-amp-5} width={20*xScale} height={10} fill="#fde68a" opacity="0.5" rx="2"/>
+      <text x={ox+60*xScale} y={oy - amp - 8} fontSize="9" fill="#d97706" textAnchor="middle">40% ディップ</text>
+      <text x={ox+60*xScale} y={oy - amp - 19} fontSize="9" fill="#d97706" textAnchor="middle">20 ms</text>
+
+      {/* Interruption region */}
+      <rect x={ox+110*xScale} y={oy-6} width={50*xScale} height={12} fill="#fca5a5" opacity="0.5" rx="2"/>
+      <text x={ox+135*xScale} y={oy + 22} fontSize="9" fill="#dc2626" textAnchor="middle">瞬停（0 %）50 ms</text>
+
+      {/* Time ticks */}
+      {[0,50,70,110,160,220].map(t => (
+        <g key={t}>
+          <line x1={ox+t*xScale} y1={oy} x2={ox+t*xScale} y2={oy+5} stroke="#374151" strokeWidth="1"/>
+          <text x={ox+t*xScale} y={oy+15} fontSize="9" fill="#6b7280" textAnchor="middle">{t}</text>
+        </g>
+      ))}
+    </svg>
+  )
+}
 
 export default function VoltageDipPage() {
   return (
@@ -13,6 +84,11 @@ export default function VoltageDipPage() {
           <p>電源系統の電圧が一時的に低下（ディップ）・消失（瞬停）・変動した際にEUTが正常動作を維持するか確認する試験。</p>
           <p><strong>模擬している現象：</strong>近隣の大電力機器起動による電圧瞬低、落雷・系統事故による電圧ディップ、電源の瞬時停電。</p>
           <p><strong>不適合の影響：</strong>機器の予期しないリセット・シャットダウン、データ損失、プロセス停止。</p>
+
+          <WaveformDiagram title="電圧ディップ・瞬停波形" caption="左：40 % ディップ（20 ms 継続）。右：完全瞬停（50 ms）。実際の試験では複数の電圧レベル・持続時間の組み合わせを実施。">
+            <VoltageDipWaveform />
+          </WaveformDiagram>
+
           <Callout type="point" title="電圧ディップの発生頻度">
             電圧ディップは実環境で頻繁に発生する（年間数十〜数百回）。特に工場・病院など重要設備では電圧変動耐量が厳しく要求される。
           </Callout>

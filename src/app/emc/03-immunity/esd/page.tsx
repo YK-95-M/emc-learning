@@ -1,5 +1,101 @@
 import TestTemplate from '@/components/TestTemplate'
 import Callout from '@/components/Callout'
+import { WaveformDiagram } from '@/components/WaveformDiagram'
+
+function ESDWaveform() {
+  // IEC 61000-4-2: rise ~1ns, peak at ~2ns, decay to 50% at ~30ns, long tail ~60ns
+  // Stylized double-exponential current pulse
+  const w = 560
+  const h = 200
+  const ox = 60  // origin x
+  const oy = 160 // origin y
+  const xScale = 4.5  // px per ns
+  const yScale = 1.3  // px per A
+
+  // Generate waveform points (approximate IEC 61000-4-2 shape, 8kV contact)
+  // Peak ~30A at ~2ns, decays with two time constants
+  const points: string[] = []
+  for (let t = 0; t <= 100; t += 0.5) {
+    let i: number
+    if (t < 0.5) {
+      i = 0
+    } else if (t < 2) {
+      i = 30 * (t / 2) ** 0.7  // fast rise
+    } else if (t < 5) {
+      i = 30 * Math.exp(-(t - 2) / 4)  // fast decay
+    } else {
+      i = 16 * Math.exp(-(t - 5) / 30)  // slow tail
+    }
+    const px = ox + t * xScale
+    const py = oy - i * yScale
+    points.push(`${px},${py}`)
+  }
+
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full max-w-xl">
+      {/* Grid lines */}
+      {[0, 10, 20, 30].map(a => (
+        <line key={a} x1={ox} y1={oy - a * yScale} x2={ox + 100 * xScale} y2={oy - a * yScale}
+          stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4,3"/>
+      ))}
+      {[0, 20, 40, 60, 80, 100].map(t => (
+        <line key={t} x1={ox + t * xScale} y1={20} x2={ox + t * xScale} y2={oy}
+          stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4,3"/>
+      ))}
+
+      {/* Axes */}
+      <line x1={ox} y1={oy} x2={ox + 100 * xScale + 20} y2={oy} stroke="#374151" strokeWidth="1.5" markerEnd="url(#arrowGray)"/>
+      <line x1={ox} y1={oy + 5} x2={ox} y2={15} stroke="#374151" strokeWidth="1.5" markerEnd="url(#arrowGray)"/>
+      <defs>
+        <marker id="arrowGray" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3 z" fill="#374151"/>
+        </marker>
+      </defs>
+
+      {/* Axis labels */}
+      <text x={ox + 100 * xScale + 25} y={oy + 4} fontSize="11" fill="#6b7280">ns</text>
+      <text x={ox - 5} y={12} fontSize="11" fill="#6b7280" textAnchor="end">A</text>
+
+      {/* Tick marks & labels */}
+      {[20, 40, 60, 80, 100].map(t => (
+        <g key={t}>
+          <line x1={ox + t * xScale} y1={oy} x2={ox + t * xScale} y2={oy + 4} stroke="#374151" strokeWidth="1"/>
+          <text x={ox + t * xScale} y={oy + 14} fontSize="10" fill="#6b7280" textAnchor="middle">{t}</text>
+        </g>
+      ))}
+      {[10, 20, 30].map(a => (
+        <g key={a}>
+          <line x1={ox - 4} y1={oy - a * yScale} x2={ox} y2={oy - a * yScale} stroke="#374151" strokeWidth="1"/>
+          <text x={ox - 7} y={oy - a * yScale + 4} fontSize="10" fill="#6b7280" textAnchor="end">{a}</text>
+        </g>
+      ))}
+
+      {/* Waveform */}
+      <polyline points={points.join(' ')} fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinejoin="round"/>
+
+      {/* Annotations */}
+      {/* Peak */}
+      <line x1={ox + 2 * xScale} y1={oy - 30 * yScale} x2={ox + 2 * xScale} y2={oy - 30 * yScale - 30} stroke="#dc2626" strokeWidth="1" strokeDasharray="3,2"/>
+      <text x={ox + 2 * xScale + 4} y={oy - 30 * yScale - 32} fontSize="10" fill="#dc2626">ピーク ~30 A</text>
+      <text x={ox + 2 * xScale + 4} y={oy - 30 * yScale - 20} fontSize="10" fill="#dc2626">（8 kV接触放電時）</text>
+
+      {/* Rise time */}
+      <line x1={ox} y1={oy + 25} x2={ox + 2 * xScale} y2={oy + 25} stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arrowPurple)" markerStart="url(#arrowPurpleR)"/>
+      <defs>
+        <marker id="arrowPurple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="#7c3aed"/>
+        </marker>
+        <marker id="arrowPurpleR" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto">
+          <path d="M6,0 L6,6 L0,3 z" fill="#7c3aed"/>
+        </marker>
+      </defs>
+      <text x={ox + 1 * xScale} y={oy + 38} fontSize="10" fill="#7c3aed" textAnchor="middle">立ち上がり &lt;1 ns</text>
+
+      {/* Title */}
+      <text x={w / 2} y={14} fontSize="12" fontWeight="bold" fill="#1f2937" textAnchor="middle">ESD 放電電流波形（IEC 61000-4-2）</text>
+    </svg>
+  )
+}
 
 export default function ESDPage() {
   return (
@@ -16,6 +112,10 @@ export default function ESDPage() {
           <Callout type="warning" title="ESDは立ち上がりが極めて速い">
             IEC 61000-4-2 の放電電流は 30 A/ns 以上の立ち上がりを持つ。これは EFT や サージとは桁違いに速く、インダクタンス成分（配線・リード）が防護の妨げになる。
           </Callout>
+
+          <WaveformDiagram title="ESD 放電電流波形" caption="IEC 61000-4-2 / 8 kV 接触放電時の代表的な電流波形。ピーク約 30 A、立ち上がり < 1 ns。">
+            <ESDWaveform />
+          </WaveformDiagram>
         </div>
       }
       setup={
@@ -41,35 +141,26 @@ export default function ESDPage() {
             </table>
           </div>
 
-          {/* SVG */}
           <div className="my-4">
             <svg viewBox="0 0 500 220" className="w-full max-w-lg border rounded bg-gray-50">
-              {/* Ground plane */}
               <rect x="10" y="180" width="480" height="20" fill="#d1d5db" stroke="#9ca3af" strokeWidth="1"/>
               <text x="250" y="195" textAnchor="middle" fontSize="10" fill="#4b5563">基準グランドプレーン</text>
-
-              {/* HCP */}
               <rect x="150" y="130" width="200" height="15" fill="#bfdbfe" stroke="#3b82f6" strokeWidth="1.5"/>
               <text x="250" y="142" textAnchor="middle" fontSize="9" fill="#1e40af">水平カップリングプレーン（HCP）</text>
-
-              {/* EUT */}
               <rect x="195" y="75" width="110" height="55" fill="#d1fae5" stroke="#059669" strokeWidth="2" rx="3"/>
               <text x="250" y="105" textAnchor="middle" fontSize="11" fill="#065f46">EUT</text>
-
-              {/* ESD Gun */}
               <rect x="60" y="85" width="100" height="25" fill="#fde68a" stroke="#d97706" strokeWidth="2" rx="3"/>
               <text x="110" y="101" textAnchor="middle" fontSize="10" fill="#92400e">ESDガン</text>
-              <line x1="160" y1="97" x2="195" y2="97" stroke="#dc2626" strokeWidth="2" markerEnd="url(#arrow)"/>
+              <line x1="160" y1="97" x2="195" y2="97" stroke="#dc2626" strokeWidth="2" markerEnd="url(#arrowRed)"/>
               <defs>
-                <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
                   <path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/>
                 </marker>
               </defs>
               <text x="177" y="90" fontSize="9" fill="#dc2626">放電</text>
-
-              {/* VCP */}
               <rect x="360" y="60" width="15" height="120" fill="#fde68a" stroke="#d97706" strokeWidth="1.5"/>
               <text x="368" y="55" textAnchor="middle" fontSize="9" fill="#92400e">VCP</text>
+              <text x="250" y="25" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#374151">ESD 試験配置図</text>
             </svg>
           </div>
         </div>
