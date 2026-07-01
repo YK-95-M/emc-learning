@@ -163,7 +163,7 @@ export default function BasicsPage() {
         </p>
         <BlockMath math="I_{CM} = \frac{I_1 + I_2}{2}" />
         <p className="text-sm text-gray-600 mt-2">
-          ノーマルモード電流は <span className="font-mono">I_{NM} = (I_1 - I_2)/2</span> で表されます。
+          ノーマルモード電流は I_NM = (I_1 - I_2)/2 で表されます。
           コモンモードは放射の主要原因であり、EMI対策の多くはコモンモード電流の抑制を目的とします。
         </p>
       </section>
