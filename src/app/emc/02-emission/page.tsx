@@ -20,24 +20,22 @@ const cards = [
     color: 'bg-indigo-500',
   },
   {
-    href: '#',
+    href: '/emc/02-emission/harmonics',
     title: '高調波電流',
     abbr: 'HC',
     standard: 'IEC 61000-3-2',
     freq: '50 Hz – 2 kHz（第40次高調波まで）',
     desc: 'AC電源から引き込む電流の高調波成分を制限。スイッチング電源やインバータで特に重要。',
     color: 'bg-purple-500',
-    comingSoon: true,
   },
   {
-    href: '#',
+    href: '/emc/02-emission/flicker',
     title: '電圧変動・フリッカ',
     abbr: 'VF',
     standard: 'IEC 61000-3-3',
     freq: 'DC – 数Hz（変動周期）',
     desc: '機器の動作による電源電圧の変動・フリッカを制限。電動機や大電流負荷変動機器が対象。',
     color: 'bg-pink-500',
-    comingSoon: true,
   },
 ]
 
@@ -53,22 +51,16 @@ export default function EmissionIndexPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {cards.map((card) => (
           <div key={card.title} className="relative">
-            {card.comingSoon && (
-              <div className="absolute top-3 right-3 z-10">
-                <span className="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded-full">準備中</span>
-              </div>
-            )}
             <Link
               href={card.href}
-              className={`block bg-white rounded-xl border border-gray-200 p-6 ${!card.comingSoon ? 'hover:shadow-md hover:border-emc-primary' : 'opacity-70 cursor-default'} transition-all group`}
-              onClick={card.comingSoon ? (e) => e.preventDefault() : undefined}
+              className="block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md hover:border-emc-primary transition-all group"
             >
               <div className="flex items-start gap-3">
                 <span className={`${card.color} text-white text-xs font-bold px-2 py-1 rounded shrink-0`}>
                   {card.abbr}
                 </span>
                 <div>
-                  <h2 className={`font-bold text-gray-900 text-sm ${!card.comingSoon ? 'group-hover:text-emc-primary' : ''} transition-colors`}>
+                  <h2 className="font-bold text-gray-900 text-sm group-hover:text-emc-primary transition-colors">
                     {card.title}
                   </h2>
                   <p className="text-xs text-gray-400 mt-0.5 font-mono">{card.standard}</p>
