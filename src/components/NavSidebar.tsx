@@ -12,42 +12,6 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: '/', label: 'トップ' },
   {
-    href: '/pcb',
-    label: 'PCB設計 学習トップ',
-    children: [
-      { href: '/pcb/00-intro', label: '00 基板ができるまで' },
-      {
-        href: '/pcb/01-basics',
-        label: '01 電気の基礎',
-        children: [
-          { href: '/pcb/01-basics/voltage-current', label: '電圧・電流・抵抗' },
-          { href: '/pcb/01-basics/ohms-law', label: 'オームの法則・電力' },
-          { href: '/pcb/01-basics/series-parallel', label: '直列・並列・KVL/KCL' },
-        ]
-      },
-      {
-        href: '/pcb/02-components',
-        label: '02 電子部品図鑑',
-        children: [
-          { href: '/pcb/02-components/resistor', label: '抵抗' },
-          { href: '/pcb/02-components/capacitor', label: 'コンデンサ' },
-          { href: '/pcb/02-components/inductor', label: 'インダクタ' },
-          { href: '/pcb/02-components/diode', label: 'ダイオード・LED' },
-          { href: '/pcb/02-components/transistor', label: 'トランジスタ・FET' },
-          { href: '/pcb/02-components/ic', label: 'IC・オペアンプ' },
-          { href: '/pcb/02-components/datasheet', label: 'データシートの読み方' },
-        ]
-      },
-      { href: '/pcb/03-circuits', label: '03 回路を読む・設計する' },
-      { href: '/pcb/04-board-structure', label: '04 基板のしくみ' },
-      { href: '/pcb/05-eda-tools', label: '05 EDAツールで作る' },
-      { href: '/pcb/06-layout', label: '06 レイアウト設計の実務' },
-      { href: '/pcb/07-manufacturing', label: '07 製造と実装' },
-      { href: '/pcb/08-verification', label: '08 検証と総合演習' },
-      { href: '/pcb/glossary', label: '用語集' },
-    ]
-  },
-  {
     href: '/emc',
     label: 'EMC 学習トップ',
     children: [
